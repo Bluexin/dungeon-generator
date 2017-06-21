@@ -1,0 +1,58 @@
+group 'be.bluexin'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-reflect:${kotlin_version}"
+    compile "org.jetbrains.kotlin:kotlin-runtime:${kotlin_version}"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:${coroutines_version}"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${coroutines_version}"
+}
+
+task sourceJar(type: Jar, dependsOn: "sourceMainJava", overwrite: true) {
+    from "src/main/java"
+    from "src/test/java"
+    from "src/main/kotlin"
+    from "src/tes/kotlin"
+    classifier = 'sources'
+}
+
+artifacts {
+    archives sourceJar
+}
+
+task uploadArchives {
+    repositories {
+        if (System.getenv('REPO_PWD') != null) {
+            repositories.mavenDeployer {
+                repository(url: "http://maven.bluexin.be/repository/" + (((String) project.version).contains("SNAPSHOT") ? "snapshots" : "releases") + "/") {
+                    authentication(userName: "travis", password: System.getenv('REPO_PWD'))
+                }
+            }
+        } /*else {
+            repositories.mavenDeployer {
+                repository(url: "file://" + (System.getenv("local_maven") != null ? System.getenv("local_maven") : project.buildDir.toString() + "/libs/mvn"))
+            }
+        }*/
+    }
+}
