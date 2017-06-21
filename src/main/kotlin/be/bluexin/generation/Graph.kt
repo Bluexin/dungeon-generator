@@ -62,7 +62,7 @@ class Graph(val grid: Grid) {
     }
 
     fun cleanGrid(): Graph {
-        costs.forEach{ tile, cost ->
+        costs.forEach { tile, cost ->
             if (cost > 0) tile.connections.clear()
         }
         grid.clean()
@@ -93,7 +93,7 @@ class Graph(val grid: Grid) {
 }
 
 
-data class Node(val tile: Tile, val cost: Int, private val graph: Graph): Comparable<Node> {
+data class Node(val tile: Tile, val cost: Int, private val graph: Graph) : Comparable<Node> {
     override fun compareTo(other: Node) = cost.compareTo(other.cost)
 
     fun neighbours(): List<Node> {

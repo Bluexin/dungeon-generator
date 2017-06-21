@@ -50,7 +50,7 @@ enum class Orientation(private val move: (Position) -> Position) : (Position) ->
     }
 
     companion object {
-        private val rng = Random(4156)
+        private val rng = Random()
 
         fun generate(amount: Int = 2, vararg connections: Orientation): Array<Orientation> {
             return when (amount) {

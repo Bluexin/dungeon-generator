@@ -26,9 +26,9 @@ class Grid(val width: Int = 30, val height: Int = 100) {
         return sb.toString()
     }
 
-    fun clean() = this.forEachIndexed { pos, tile ->
-        this.forEach { it.connections.removeIf { o -> (!o !in this[it.pos(o)].connections) } }
-        if (tile.replaceable) this[pos] = Wall(pos)
+    fun clean() = this.forEach {
+        it.connections.removeIf { o -> (!o !in this[it.pos(o)].connections) }
+        if (it.replaceable) this[it.pos] = Wall(it.pos)
     }
 
     private operator fun set(pos: Position, tile: Tile) {
@@ -68,7 +68,7 @@ class Grid(val width: Int = 30, val height: Int = 100) {
     }
 
     fun generate(): Grid {
-        val rng = Random(40931)
+        val rng = Random()
         this.forEachIndexed { position, tile ->
             if (tile.replaceable) {
                 if (rng.nextFloat() > 0.66f) this += Room(position)

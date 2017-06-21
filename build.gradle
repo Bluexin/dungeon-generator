@@ -56,3 +56,16 @@ task uploadArchives {
         }*/
     }
 }
+
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        javaParameters = true
+        jvmTarget = 1.8
+    }
+}

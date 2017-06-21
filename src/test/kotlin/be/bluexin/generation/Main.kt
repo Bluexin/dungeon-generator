@@ -1,5 +1,8 @@
 package be.bluexin.generation
 
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
 import kotlin.system.measureTimeMillis
 
 /**
@@ -11,9 +14,10 @@ object Main {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        manyTimed()
-        manyTimed()
-        manyTimed()
+        manyTimed(100)
+        manyTimed(100)
+        manyTimed(100)
+        manyTimed(100)
 
         Thread.sleep(10) // To make sure the process finishes printing before getting disconnected
     }
@@ -43,21 +47,26 @@ object Main {
         var g: Grid? = null
         val time = measureTimeMillis {
             g = Grid(100, 100).generate()
-            Graph(g!!).explore().makePaths()
+            Graph(g!!).explore().makePaths().reset().explore().cleanGrid()
         }
         println("$g\n\nGenerated in $time millis.")
     }
 
-    private fun manyTimed() {
-        val times = LongArray(100)
+    private fun manyTimed(amount: Int = 100) {
+        val times = LongArray(amount)
         val total = measureTimeMillis {
-            repeat(100) {
-                times[it] = measureTimeMillis {
-                    Graph(Grid(100, 100).generate()).explore().makePaths()
+            runBlocking {
+                val l = List(amount) {
+                    launch(CommonPool) {
+                        times[it] = measureTimeMillis {
+                            Graph(Grid(100, 100).generate()).explore().makePaths().reset().explore().cleanGrid()
+                        }
+                    }
                 }
+                l.forEach { it.join() }
             }
         }
-        println("Generated 100 dungeons of size 100*100 in ${times.sum()} ms, for an average of ${times.average()} ms each.\n" +
+        println("Generated $amount dungeons of size 100*100 in ${times.sum()} ms, for an average of ${times.average()} ms each.\n" +
                 "Longest took ${times.max()} ms and fastest took ${times.min()} ms.\nTook $total ms really (using coroutines).")
     }
 }
