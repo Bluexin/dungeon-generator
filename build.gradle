@@ -46,20 +46,18 @@ artifacts {
 mainClassName = "be.bluexin.generation.Main"
 applicationDefaultJvmArgs = ["-Xverify:none"]
 
-task uploadArchives {
-    repositories {
-        if (System.getenv('REPO_PWD') != null) {
-            repositories.mavenDeployer {
-                repository(url: "http://maven.bluexin.be/repository/" + (((String) project.version).contains("SNAPSHOT") ? "snapshots" : "releases") + "/") {
-                    authentication(userName: "travis", password: System.getenv('REPO_PWD'))
-                }
+uploadArchives {
+    if (System.getenv('REPO_PWD') != null) {
+        repositories.mavenDeployer {
+            repository(url: "http://maven.bluexin.be/repository/" + (((String) project.version).contains("SNAPSHOT") ? "snapshots" : "releases") + "/") {
+                authentication(userName: "travis", password: System.getenv('REPO_PWD'))
             }
-        } /*else {
+        }
+    } /*else {
             repositories.mavenDeployer {
                 repository(url: "file://" + (System.getenv("local_maven") != null ? System.getenv("local_maven") : project.buildDir.toString() + "/libs/mvn"))
             }
-        }*/
-    }
+    }*/
 }
 
 kotlin {
