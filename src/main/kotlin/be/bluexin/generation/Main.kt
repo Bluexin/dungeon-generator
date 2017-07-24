@@ -14,40 +14,51 @@ object Main {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        manyTimed(100)
-        manyTimed(100)
-        manyTimed(100)
-        manyTimed(100)
+        if (args.isNotEmpty()) when (args[0]) {
+            "many" -> {
+                manyTimed(200)
+                manyTimed(200)
+                manyTimed(200)
+                manyTimed(200)
+            }
+            "timed" -> timed()
+            "help" -> println("Available options are: many, timed, demo. Defaults to demo when nothing is specified.")
+            "demo" -> demo()
+            else -> println("Invalid option ${args[0]}.\nAvailable options are: many, timed, demo. Defaults to demo when nothing is specified.")
+        } else demo()
 
         Thread.sleep(10) // To make sure the process finishes printing before getting disconnected
     }
 
+    private fun makeGraph(grid: Grid) = WGraph(grid)
+
     private fun demo() {
-        val g = Grid()
+        val g = Grid(30, 100)
         g.generate()
 
         println("Printing original grid...\n$g")
 
-        val gr = Graph(g)
+        val gr = makeGraph(g)
         gr.explore()
         println("Printing first pass graph...\n$gr")
         gr.makePaths()
 
         println("Printing grid after paths resolution...\n$g")
-
-        gr.reset()
-        gr.explore()
         println("Printing second pass graph...\n$gr")
         gr.cleanGrid()
 
         println("Printing grid after cleanup...\n$g")
+
+        gr.reset()
+        gr.explore()
+        println("Printing 3rd pass graph...\n$gr")
     }
 
     private fun timed() {
         var g: Grid? = null
         val time = measureTimeMillis {
             g = Grid(100, 100).generate()
-            Graph(g!!).explore().makePaths().reset().explore().cleanGrid()
+            makeGraph(g!!).explore().makePaths().reset().explore().cleanGrid()
         }
         println("$g\n\nGenerated in $time millis.")
     }
@@ -57,9 +68,10 @@ object Main {
         val total = measureTimeMillis {
             runBlocking {
                 val l = List(amount) {
+                    if (!isActive) return@runBlocking
                     launch(CommonPool) {
                         times[it] = measureTimeMillis {
-                            Graph(Grid(100, 100).generate()).explore().makePaths().reset().explore().cleanGrid()
+                            makeGraph(Grid(100, 100).generate()).explore().makePaths().reset().explore().cleanGrid()
                         }
                     }
                 }

@@ -12,8 +12,6 @@ abstract class Tile(val pos: Position, vararg orientations: Orientation) {
 
     val connections = mutableSetOf(*orientations)
 
-    infix fun to(that: Tile) = this.pos to that.pos
-    infix fun to(that: Position) = this.pos to that
     abstract val text: Array<String>
 
     open val replaceable = false

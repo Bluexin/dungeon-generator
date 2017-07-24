@@ -3,7 +3,6 @@ package be.bluexin.generation
 import java.util.*
 import kotlin.collections.HashMap
 
-
 /**
  * Part of tests by bluexin, released under GNU GPLv3.
  *
@@ -12,8 +11,11 @@ import kotlin.collections.HashMap
 class Graph(val grid: Grid) {
 
     private val q = PriorityQueue<Node>()
-    private val from = HashMap<Tile, Tile>(grid.width * grid.height)
-    private val costs = HashMap<Tile, Int>(grid.width * grid.height)
+    private val from = HashMap<Tile, Tile>()
+    private val costs = HashMap<Tile, Int>()
+
+    var breakCost = 1F
+    var passTroughCost = 0.1F
 
     init {
         reset()
@@ -21,8 +23,18 @@ class Graph(val grid: Grid) {
 
     fun reset(): Graph {
         from.clear()
+
+        /*
+//        costs.clear() // Keeping the already 0'd costs isn't worth. -> except when you gotta do multiple passes
+//        val s = costs.size
+        val iter = costs.iterator()
+        while (iter.hasNext()) if (iter.next().value > 0) iter.remove()
+//        println("Costs decreased from $s to ${costs.size}.")
+
+         */
+
         costs.clear()
-        val t = grid.firstRoom to 0
+        val t = grid.firstRoom costs 0
         q.add(t)
         costs[t.tile] = 0
 
@@ -32,8 +44,7 @@ class Graph(val grid: Grid) {
     fun explore(): Graph {
         while (q.isNotEmpty()) {
             val current = q.poll()
-            val l = current.neighbours()
-            l.forEach {
+            current.neighbours().forEach {
                 if (it.tile !in costs || costs[it.tile]!! > it.cost) {
                     costs[it.tile] = it.cost
                     q.add(it)
@@ -49,7 +60,7 @@ class Graph(val grid: Grid) {
         grid.rooms.forEach {
             var cpos = it
             var t = grid[cpos]
-            while (costs[t]!! > 0) {
+            while ((costs[t] ?: 0 > 0)) {
                 val dir = cpos dir from[t]!!.pos
                 t.connections.add(dir)
                 cpos = cpos(dir)
@@ -57,6 +68,9 @@ class Graph(val grid: Grid) {
                 t.connections.add(!dir)
             }
         }
+
+        this.reset()
+        this.explore()
 
         return this
     }
@@ -70,7 +84,7 @@ class Graph(val grid: Grid) {
         return this
     }
 
-    infix fun Tile.to(that: Int) = Node(this, that, this@Graph)
+    infix fun Tile.costs(that: Int) = Node(this, that, this@Graph)
 
     override fun toString(): String {
         val sb = StringBuilder("Printing graph data :\n")
@@ -79,9 +93,9 @@ class Graph(val grid: Grid) {
             if (tile is Room) sb.append("$tile -> $cost\n")
         }
 
-        val a = Array(grid.height, { CharArray(grid.height, { '?' }) })
+        val a = Array(grid.height, { Array(grid.width, { "?" }) })
         costs.forEach { tile, cost ->
-            a[tile.pos.y][tile.pos.x] = if (cost > 9) 'x' else cost.toString().first()
+            a[tile.pos.y][tile.pos.x] = "${ColorHelper.getColor(tile, cost == 0)}${if (cost > 9) 'x' else cost.toString()}${ColorHelper.RESET}"
         }
         a.forEach {
             it.forEach { sb.append(it) }
@@ -91,7 +105,6 @@ class Graph(val grid: Grid) {
         return sb.toString()
     }
 }
-
 
 data class Node(val tile: Tile, val cost: Int, private val graph: Graph) : Comparable<Node> {
     override fun compareTo(other: Node) = cost.compareTo(other.cost)

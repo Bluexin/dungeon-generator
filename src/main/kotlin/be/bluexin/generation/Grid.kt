@@ -11,7 +11,7 @@ import java.util.*
 class Grid(val width: Int = 30, val height: Int = 100) {
 
     private val grid = Array(width) { x -> Array<Tile>(height) { y -> Empty(x to y) } }
-    val rooms = sortedSetOf<Position>()
+    val rooms = mutableSetOf<Position>()
 
     override fun toString(): String {
         val sb = StringBuilder("Rooms: $rooms\nGrid :\n")
@@ -37,21 +37,25 @@ class Grid(val width: Int = 30, val height: Int = 100) {
 
     operator fun get(pos: Position) = if (pos in this) grid[pos] else Wall(pos)
 
-    operator fun contains(pos: Position) = pos.x in grid.indices && pos.y in grid[pos.x].indices
+    operator fun contains(pos: Position) = pos.x in 0 until width && pos.y in 0 until height
 
-    fun forEachIndexed(body: (Position, Tile) -> Unit) {
+    private inline fun forEachIndexed(body: (Position, Tile) -> Unit) {
         grid.forEachIndexed { x, it ->
             it.forEachIndexed { y, tile -> body(x to y, tile) }
         }
     }
 
-    fun forEach(body: (Tile) -> Unit) = grid.forEach { it.forEach(body) }
+    private inline fun forEach(body: (Tile) -> Unit) = grid.forEach { it.forEach(body) }
 
     operator fun plusAssign(room: Room) {
-        if (/*this[room.pos].replaceable && room.pos.isPair*/rooms.all { it to room > 2 }) {
-            rooms.add(room.pos)
-            this[room.pos] = room
+        repeat(4) { x ->
+            repeat(4) { y ->
+                if (this[room.pos + (x - 2 to y - 2)] is Room) return@plusAssign
+            }
         }
+
+        rooms.add(room.pos)
+        this[room.pos] = room
     }
 
     operator fun plusAssign(tile: Tile) {
@@ -68,12 +72,12 @@ class Grid(val width: Int = 30, val height: Int = 100) {
     }
 
     fun generate(): Grid {
-        val rng = Random()
+        val rng = Random(40931)
         this.forEachIndexed { position, tile ->
             if (tile.replaceable) {
                 if (rng.nextFloat() > 0.66f) this += Room(position)
                 if (this[position].replaceable) {
-                    if (rng.nextFloat() > 0.25f) this += Corridor(position, *Orientation.generate(rng.nextInt(4) + 1, *this.getSetConnectionsTo(position)))
+                    if (rng.nextFloat() > 0.25f) this += Corridor(position, *Orientation.generate(rng, rng.nextInt(4) + 1, *this.getSetConnectionsTo(position)))
                     else this += Corridor(position)
                 }
             }

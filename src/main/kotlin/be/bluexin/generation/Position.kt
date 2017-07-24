@@ -16,9 +16,6 @@ data class Position(val x: Int, val y: Int) : Comparable<Position>, (Orientation
     operator fun plus(other: Position) = this.x + other.x to this.y + other.y
     operator fun minus(other: Position) = this.x - other.x to this.y - other.y
 
-    infix fun to(other: Position) = Math.abs(this.x - other.x) + Math.abs(this.y - other.y)
-    infix fun to(that: Tile) = this to that.pos
-
     override fun invoke(p1: Orientation) = p1(this)
 
     override fun toString() = "($x; $y)"
@@ -50,9 +47,8 @@ enum class Orientation(private val move: (Position) -> Position) : (Position) ->
     }
 
     companion object {
-        private val rng = Random()
 
-        fun generate(amount: Int = 2, vararg connections: Orientation): Array<Orientation> {
+        fun generate(rng: Random, amount: Int = 2, vararg connections: Orientation): Array<Orientation> {
             return when (amount) {
                 0 -> emptyArray<Orientation>()
                 4 -> Orientation.values()
