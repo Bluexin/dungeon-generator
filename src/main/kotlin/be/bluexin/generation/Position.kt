@@ -46,6 +46,20 @@ enum class Orientation(private val move: (Position) -> Position) : (Position) ->
         W -> E
     }
 
+    /**
+     * Rotate right (clockwise).
+     */
+    infix fun shr(count: Int) =
+            if (count < 0) throw IllegalArgumentException("Count must be positive! Received $count")
+            else Orientation.values()[(this.ordinal + count) % 4]
+
+    /**
+     * Rotate left (counterclockwise).
+     */
+    infix fun shl(count: Int) =
+            if (count < 0) throw IllegalArgumentException("Count must be positive! Received $count")
+            else Orientation.values()[(this.ordinal + 4 - count % 4) % 4]
+
     companion object {
 
         fun generate(rng: Random, amount: Int = 2, vararg connections: Orientation): Array<Orientation> {
