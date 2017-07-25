@@ -8,7 +8,7 @@ import java.util.*
  *
  * @author Bluexin
  */
-class Grid(val width: Int = 30, val height: Int = 100) {
+class Grid(val width: Int = 30, val height: Int = 100, val rng: Random = Random()) {
 
     private val grid = Array(width) { x -> Array<Tile>(height) { y -> Empty(x to y) } }
     val rooms = mutableSetOf<Position>()
@@ -72,7 +72,6 @@ class Grid(val width: Int = 30, val height: Int = 100) {
     }
 
     fun generate(): Grid {
-        val rng = Random(40931)
         this.forEachIndexed { position, tile ->
             if (tile.replaceable) {
                 if (rng.nextFloat() > 0.66f) this += Room(position)
