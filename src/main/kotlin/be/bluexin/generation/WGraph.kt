@@ -69,11 +69,11 @@ class WGraph(val grid: Grid) {
 
     fun makePaths(): WGraph {
         var c = 0
-        while (grid.rooms.any { !(costs[grid[it]]?.second ?: true) }) {
+        while (grid.rooms.any { costs[grid[it]]?.second == false }) {
             grid.rooms.forEach {
                 var cpos = it
                 var t = grid[cpos]
-                while (!(costs[t]?.second ?: true)) {
+                while (costs[t]?.second == false) {
                     val dir = cpos dir from[t]!!.pos
                     t.connections.add(dir)
                     cpos = cpos(dir)

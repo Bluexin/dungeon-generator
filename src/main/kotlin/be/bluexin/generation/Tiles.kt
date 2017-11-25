@@ -11,6 +11,7 @@ import be.bluexin.generation.Orientation.*
 abstract class Tile(val pos: Position, vararg orientations: Orientation) {
 
     val connections = mutableSetOf(*orientations)
+    val decorations = mutableSetOf<TileDecoration>()
 
     abstract val text: Array<String>
 
@@ -18,7 +19,24 @@ abstract class Tile(val pos: Position, vararg orientations: Orientation) {
 
     override fun toString() = "${this::class.simpleName} at $pos"
 
-    override fun equals(other: Any?) = this === other || (other is Tile && pos == other.pos)
+    operator fun TileDecoration.unaryPlus() {
+        this@Tile.decorations += this
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Tile
+
+        return when {
+            pos != other.pos -> false
+            connections != other.connections -> false
+            decorations != other.decorations -> false
+            else -> true
+        }
+    }
+
     override fun hashCode() = pos.hashCode()
 
 }
@@ -29,7 +47,7 @@ class Room(pos: Position, vararg orientations: Orientation = Orientation.values(
         get() = arrayOf(
                 "┏━${charTo(N)}━┓",
                 "┃   ┃",
-                "${charTo(W)} r ${charTo(E)}",
+                "${charTo(W)} ${centerChar()} ${charTo(E)}",
                 "┃   ┃",
                 "┗━${charTo(S)}━┛"
         )
@@ -45,6 +63,8 @@ class Room(pos: Position, vararg orientations: Orientation = Orientation.values(
         Orientation.S -> '━'
         Orientation.W -> '┃'
     }
+
+    private fun centerChar() = if (decorations.contains(Stairs.UP)) 'U' else if (decorations.contains(Stairs.DOWN)) 'D' else 'R'
 }
 
 class Corridor(pos: Position, vararg orientations: Orientation = emptyArray()) : Tile(pos, *orientations) {

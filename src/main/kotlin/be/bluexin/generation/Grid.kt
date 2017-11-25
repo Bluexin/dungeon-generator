@@ -1,5 +1,6 @@
 package be.bluexin.generation
 
+import org.jetbrains.annotations.TestOnly
 import java.util.*
 
 
@@ -8,9 +9,11 @@ import java.util.*
  *
  * @author Bluexin
  */
-class Grid(val width: Int = 30, val height: Int = 100, val rng: Random = Random()) {
+class Grid(val width: Int = 30, val height: Int = 100, val rng: XoRoRNG = XoRoRNG()) {
 
-    private val grid = Array(width) { x -> Array<Tile>(height) { y -> Empty(x to y) } }
+    internal val grid = Array(width) { x -> Array<Tile>(height) { y -> Empty(x to y) } }
+        @TestOnly get
+
     val rooms = mutableSetOf<Position>()
 
     override fun toString(): String {
@@ -23,6 +26,8 @@ class Grid(val width: Int = 30, val height: Int = 100, val rng: Random = Random(
                 sb.append('\n')
             }
         }
+        sb.append("Seed: ${rng.lastSeed}")
+
         return sb.toString()
     }
 
@@ -48,6 +53,8 @@ class Grid(val width: Int = 30, val height: Int = 100, val rng: Random = Random(
     private inline fun forEach(body: (Tile) -> Unit) = grid.forEach { it.forEach(body) }
 
     operator fun plusAssign(room: Room) {
+        if (room.pos !in this) return
+
         repeat(4) { x ->
             repeat(4) { y ->
                 if (this[room.pos + (x - 2 to y - 2)] is Room) return@plusAssign
@@ -59,7 +66,8 @@ class Grid(val width: Int = 30, val height: Int = 100, val rng: Random = Random(
     }
 
     operator fun plusAssign(tile: Tile) {
-        if (this[tile.pos].replaceable) this[tile.pos] = tile
+        if (tile is Room) this += tile
+        else if (this[tile.pos].replaceable) this[tile.pos] = tile
     }
 
     fun getSetConnectionsTo(pos: Position): Array<Orientation> {
@@ -87,4 +95,33 @@ class Grid(val width: Int = 30, val height: Int = 100, val rng: Random = Random(
 
     val firstRoom
         get() = this[rooms.first()]
+
+    operator fun Tile.unaryPlus() {
+        this@Grid += this
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Grid
+
+        if (width != other.width) return false
+        if (height != other.height) return false
+        if (!Arrays.deepEquals(grid, other.grid)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = width
+        result = 31 * result + height
+        result = 31 * result + grid.contentDeepHashCode()
+        return result
+    }
+
+    val deepHash
+        get() = grid.contentDeepHashCode()
+
+
 }

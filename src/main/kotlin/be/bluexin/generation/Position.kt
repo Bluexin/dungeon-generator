@@ -1,7 +1,5 @@
 package be.bluexin.generation
 
-import java.util.*
-
 /**
  * Part of tests by bluexin, released under GNU GPLv3.
  *
@@ -62,9 +60,9 @@ enum class Orientation(private val move: (Position) -> Position) : (Position) ->
 
     companion object {
 
-        fun generate(rng: Random, amount: Int = 2, vararg connections: Orientation): Array<Orientation> {
+        fun generate(rng: XoRoRNG, amount: Int = 2, vararg connections: Orientation): Array<Orientation> {
             return when (amount) {
-                0 -> emptyArray<Orientation>()
+                0 -> emptyArray()
                 4 -> Orientation.values()
                 else -> {
                     val l = mutableSetOf<Orientation>()

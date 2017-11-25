@@ -3,6 +3,7 @@ package be.bluexin.generation
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
+import java.util.*
 import kotlin.system.measureTimeMillis
 
 /**
@@ -14,6 +15,8 @@ object Main {
 
     @JvmStatic
     fun main(args: Array<String>) {
+        println("Press enter to start...")
+        Scanner(System.`in`).nextLine()
         if (args.isNotEmpty()) when (args[0]) {
             "many" -> {
                 manyTimed(200)
@@ -22,8 +25,9 @@ object Main {
                 manyTimed(200)
             }
             "timed" -> timed()
-            "help" -> println("Available options are: many, timed, demo. Defaults to demo when nothing is specified.")
+            "help" -> println("Available options are: many, timed, demo, floors. Defaults to demo when nothing is specified.")
             "demo" -> demo()
+            "floors" -> floors()
             else -> println("Invalid option ${args[0]}.\nAvailable options are: many, timed, demo. Defaults to demo when nothing is specified.")
         } else demo()
 
@@ -80,5 +84,14 @@ object Main {
         }
         println("Generated $amount dungeons of size 100*100 in ${times.sum()} ms, for an average of ${times.average()} ms each.\n" +
                 "Longest took ${times.max()} ms and fastest took ${times.min()} ms.\nTook $total ms really (using coroutines).")
+    }
+
+    private fun floors() {
+        val generator = DungeonGenerator()
+        val time = measureTimeMillis {
+            generator.generate()
+        }
+
+        println("Took $time ms.")
     }
 }
